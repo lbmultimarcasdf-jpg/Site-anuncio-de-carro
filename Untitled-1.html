@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LB Multimarcas</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              darkBg: "#0f172a",
+              panel: "#1e293b",
+              panelSoft: "#334155",
+              brandRed: "#ff2a2a",
+              royalBlue: "#1f5eff",
+            },
+          },
+        },
+      };
+    </script>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      html,
+      body {
+        background: #0f172a;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      .card-shadow {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      }
+    </style>
+  </head>
+  <body class="bg-darkBg text-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useMemo, useState } = React;
+
+      const icons = {
+        Search: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        ),
+        SlidersHorizontal: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <line x1="21" y1="4" x2="14" y2="4"></line>
+            <line x1="10" y1="4" x2="3" y2="4"></line>
+            <line x1="21" y1="12" x2="12" y2="12"></line>
+            <line x1="8" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="20" x2="16" y2="20"></line>
+            <line x1="12" y1="20" x2="3" y2="20"></line>
+            <line x1="14" y1="2" x2="14" y2="6"></line>
+            <line x1="8" y1="10" x2="8" y2="14"></line>
+            <line x1="16" y1="18" x2="16" y2="22"></line>
+          </svg>
+        ),
+        Calendar: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        ),
+        Gauge: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <path d="M12 14l4-4"></path>
+            <path d="M3.34 17a10 10 0 1 1 17.32 0"></path>
+          </svg>
+        ),
+        Phone: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.62 2.6a2 2 0 0 1-.45 2.11L8.1 9.56a16 16 0 0 0 6.34 6.34l1.13-1.13a2 2 0 0 1 2.11-.45c.83.29 1.7.5 2.6.62A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        ),
+        MapPin: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+        ),
+        Clock3: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        ),
+        MessageCircle: (p) => (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={p.className}>
+            <path d="M21 11.5a8.5 8.5 0 1 1-4.2-7.4L21 3v8.5z"></path>
+          </svg>
+        ),
+      };
+
+      const cars = [
+        { id: 1, title: "Toyota Hilux SRV", brand: "Toyota", details: "SRV Diesel", year: 2022, yearLabel: "2022/2022", km: 42000, kmLabel: "42.000 km", price: 220000, priceLabel: "R$ 220.000", transmission: "Automático", fuel: "Diesel", color: "Preto", images: ["8722517f-22d0-4686-81a0-c365f0c9426f.jpeg","2d4ea2e5-c2e1-4d4a-8276-4054dd57d48e.jpeg","3dca430c-c29e-49e8-a7e7-56298dd74f00.jpeg","1ef8ce2b-b965-441c-9ce6-4f38c6f87181.jpeg"] },
+         { id: 2, title: "Toyota Hilux SRX", brand: "Toyota", details: "SRX Diesel", year: 2018, yearLabel: "2018/2018", km: 136000, kmLabel: "136.000 km", price: 189000, priceLabel: "R$ 189.000", transmission: "Automático", fuel: "Diesel", color: "Preto", images: ["6f764e23-16d4-4286-85a0-4687f101630f.jpeg","5e9526e7-4afb-4d2a-b045-9df4683f5daf.jpeg","12674f68-0454-460c-bf3c-4ebf223fbc59.jpeg","6aed066f-f8e5-4a8f-afc1-e1861a61ac02.jpeg"] },
+         { id: 3, title: "Toyota Corolla XEI", brand: "Toyota", details: "XEI", year: 2025, yearLabel: "2024/2025", km: 9000, kmLabel: "9.000 km", price: 159000, priceLabel: "R$ 159.000", transmission: "Automático", fuel: "Flex", color: "Cinza", images: ["9d35bad9-71b3-422e-8779-46440d1a1af4.jpeg","9e801fec-8556-43ea-8a0c-ca0587ed79a4.jpeg","feb8d41f-63d7-485d-9dbf-da0a8b0caeec.jpeg","2d9137a4-e016-4195-89cc-1ebeb004cdc5.jpeg"] },
+        { id: 4, title: "Toyota Corolla Cross XRE", brand: "Toyota", details: "2.0 XRE", year: 2023, yearLabel: "2022/2023", km: 23000, kmLabel: "23.000 km", price: 150000, priceLabel: "R$ 150.000", transmission: "Automático", fuel: "Flex", color: "Prata", images: ["0e6e6e0c-f53f-4662-9903-9ec0da6f4077.jpeg","115f1bfc-be98-4f03-884c-75288d446e6a.jpeg","0e6e6e0c-f53f-4662-9903-9ec0da6f4077.jpeg","91171473-9e3e-4972-b587-d2728117497b.jpeg"] },
+        { id: 5, title: "Toyota Hilux SW4 SRV", brand: "Toyota", details: "SRV 7 lugares", year: 2014, yearLabel: "2013/2014", km: 184000, kmLabel: "184.000 km", price: 152000, priceLabel: "R$ 152.000", transmission: "Automático", fuel: "Diesel", color: "Preto", images: ["0671557c-c755-41a9-b2a5-d71be1243c98.jpeg","66cd6bb3-0c4c-43cc-8578-50239e78309f.jpeg","b4291ec7-45fb-42b1-8f9c-c066594b964b.jpeg","090313c1-e0e4-4778-8743-0dfda8573381.jpeg"] },
+        { id: 6, title: "Fiat Strada CD", brand: "Fiat", details: "CD 1.4 completa", year: 2016, yearLabel: "2016/2016", km: 174000, kmLabel: "174.000 km", price: 66000, priceLabel: "R$ 66.000", transmission: "Manual", fuel: "Flex", color: "Prata", images: ["18d704d8-8923-492a-85de-dd3b0c2b4680.jpeg","1ed75162-0d14-47f9-94e6-1b662eb7845a.jpeg","d89eec2d-a659-4c77-809c-6b4752c0f840.jpeg","18d704d8-8923-492a-85de-dd3b0c2b4680.jpeg"] },
+        { id: 7, title: "Toyota Hilux SRV", brand: "Toyota", details: "SRV Diesel", year: 2015, yearLabel: "2015/2015", km: 190000, kmLabel: "190.000 km", price: 158000, priceLabel: "R$ 158.000", transmission: "Automático", fuel: "Diesel", color: "Branca", images: ["bdac6c07-70e5-4cda-9e22-e04b90186917.jpeg","7beff7d7-f93f-45a5-8bf0-98d82c7cd770.jpeg","71c30e49-2f8b-4b29-9f40-edddfc45bc07.jpeg71c30e49-2f8b-4b29-9f40-edddfc45bc07.jpeg"] },
+      ];
+      function Header() {
+        const menu = [
+          { label: "Estoque", href: "#estoque" },
+          { label: "Venda seu Carro", href: "#informacoes" },
+          { label: "Financie", href: "#informacoes" },
+          { label: "Sobre", href: "#sobre" },
+        ];
+
+        return (
+          <header className="sticky top-0 z-40 backdrop-blur bg-darkBg/90 border-b border-white/10">
+            <div className="bg-panelSoft border-b border-white/10">
+              <div className="max-w-7xl mx-auto px-4 py-2 text-xs sm:text-sm text-gray-300 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <icons.Clock3 className="w-4 h-4 text-brandRed" />
+                  <span><strong className="text-white">Horário de atendimento:</strong> Seg-Sex 08:00 às 17:00h | Sáb 08:00 às 12:00h | Dom 08:00 às 12:00h</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-300">
+                  <icons.MapPin className="w-4 h-4 text-brandRed" />
+                  <span>LB Multimarcas - Brasília/DF</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-brandRed text-white font-black grid place-items-center">LB</div>
+                  <div>
+                    <p className="font-bold text-lg">LB Multimarcas</p>
+                    <p className="text-xs text-gray-300">Marketplace automotivo</p>
+                  </div>
+                </div>
+
+                <nav className="hidden md:flex items-center gap-6 text-sm text-gray-200">
+                  {menu.map((item) => <a key={item.label} href={item.href} className="hover:text-white transition">{item.label}</a>)}
+                </nav>
+
+                <a href="https://wa.me/5561999114003" target="_blank" className="inline-flex items-center gap-2 bg-[#1f9d49] hover:bg-[#18863d] text-white px-3 py-2 rounded-lg text-sm font-semibold transition">
+                  <icons.MessageCircle className="w-4 h-4" />
+                  (61) 9 9911-4003
+                </a>
+              </div>
+            </div>
+          </header>
+        );
+      }
+
+      function FilterPanel({ isOpen, filters, setFilters, onApply, onClear, brands }) {
+        if (!isOpen) return null;
+        return (
+          <div className="max-w-7xl mx-auto px-4 mt-3">
+            <div className="bg-panel border border-white/10 rounded-xl p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+              <select className="bg-darkBg border border-white/15 rounded-lg p-2 text-sm" value={filters.brand} onChange={(e) => setFilters((prev) => ({ ...prev, brand: e.target.value }))}>
+                <option value="">Marca (todas)</option><option value="VW">VW</option><option value="HONDA">HONDA</option><option value="CHEVROLET">CHEVROLET</option><option value="FORD">FORD</option><option value="RENAULT">RENAULT</option>
+                {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+              </select>
+              <select className="bg-darkBg border border-white/15 rounded-lg p-2 text-sm" value={filters.fuel} onChange={(e) => setFilters((prev) => ({ ...prev, fuel: e.target.value }))}>
+                <option value="">Combustível (todos)</option><option value="Diesel">Diesel</option><option value="Flex">Flex</option><option value="Gasolina">Gasolina</option>
+              </select>
+              <input type="number" placeholder="Preço máximo" className="bg-darkBg border border-white/15 rounded-lg p-2 text-sm" value={filters.maxPrice} onChange={(e) => setFilters((prev) => ({ ...prev, maxPrice: e.target.value }))} />
+              <input type="number" placeholder="KM máximo" className="bg-darkBg border border-white/15 rounded-lg p-2 text-sm" value={filters.maxKm} onChange={(e) => setFilters((prev) => ({ ...prev, maxKm: e.target.value }))} />
+              <div className="md:col-span-4 flex gap-2">
+                <button onClick={onApply} className="bg-royalBlue hover:bg-blue-600 px-4 py-2 rounded-lg text-sm font-semibold">Aplicar filtros</button>
+                <button onClick={onClear} className="border border-white/20 hover:border-white/40 px-4 py-2 rounded-lg text-sm">Limpar</button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function SearchBar({ searchTerm, setSearchTerm, sortOrder, setSortOrder, onSearch, onToggleFilter }) {
+        return (
+          <section className="mt-6">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] gap-3">
+                <div className="flex">
+                  <input type="text" placeholder="Busque por marca, modelo, versão..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-panel border border-white/15 rounded-l-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-royalBlue" />
+                  <button onClick={onSearch} className="bg-royalBlue hover:bg-blue-600 px-4 rounded-r-xl transition"><icons.Search className="w-5 h-5" /></button>
+                </div>
+                <button onClick={onToggleFilter} className="bg-panel border border-white/15 hover:border-royalBlue text-sm px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition">
+                  <icons.SlidersHorizontal className="w-4 h-4 text-royalBlue" />Filtrar
+                </button>
+                <select className="bg-panel border border-white/15 hover:border-royalBlue text-sm px-4 py-3 rounded-xl" value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                  <option value="recentes">Ordenar por: Mais recentes</option><option value="precoAsc">Ordenar por: Menor preço</option><option value="precoDesc">Ordenar por: Maior preço</option><option value="kmAsc">Ordenar por: Menor KM</option>
+                </select>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function CarCard({ car, onViewMore }) {
+        return (
+          <article className="bg-panel rounded-2xl overflow-hidden border border-white/10 card-shadow hover:border-brandRed/70 hover:-translate-y-1 transition duration-300">
+            <div className="relative">
+              <img src={car.images[0]} alt={car.title} className="w-full aspect-[4/3] object-cover" />
+              {car.id <= 2 && (
+  <span className="absolute top-3 left-3 bg-brandRed text-white text-xs font-bold px-3 py-1 rounded-full">
+    Destaque
+  </span>
+)}
+            </div>
+            <div className="p-5">
+              <h3 className="text-lg font-bold">{car.title}</h3>
+              <p className="text-sm text-gray-300 mt-1">{car.details}</p>
+              <div className="flex items-center gap-4 mt-4 text-sm text-gray-200">
+                <div className="flex items-center gap-1"><icons.Calendar className="w-4 h-4 text-gray-300" />{car.yearLabel}</div>
+                <div className="flex items-center gap-1"><icons.Gauge className="w-4 h-4 text-gray-300" />{car.kmLabel}</div>
+              </div>
+              <div className="mt-5 flex items-center justify-between">
+                <p className="text-2xl font-extrabold text-brandRed">{car.priceLabel}</p>
+                <button onClick={() => onViewMore(car)} className="text-sm border border-white/20 hover:border-white/40 px-4 py-2 rounded-lg transition">Ver Mais</button>
+              </div>
+            </div>
+          </article>
+        );
+      }
+
+      function CarModal({ car, onClose }) {
+        const [activeImage, setActiveImage] = useState(0);
+        if (!car) return null;
+        return (
+          <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-5xl bg-panel rounded-2xl border border-white/15 overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                <h3 className="text-lg font-bold">{car.title}</h3>
+                <button onClick={onClose} className="text-sm border border-white/20 px-3 py-1 rounded-md hover:border-white/50">Fechar</button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-0">
+                <div className="p-4">
+                  <img src={car.images[activeImage]} alt={car.title} className="w-full aspect-[4/3] object-cover rounded-xl" />
+                  <div className="grid grid-cols-4 gap-2 mt-3">
+                    {car.images.map((img, i) => (
+                      <button key={i} onClick={() => setActiveImage(i)} className={`rounded-lg overflow-hidden border ${activeImage === i ? "border-brandRed" : "border-white/20"}`}>
+                        <img src={img} alt={`Imagem ${i + 1}`} className="w-full h-16 object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="p-4 md:p-6 border-t md:border-t-0 md:border-l border-white/10">
+                  <p className="text-brandRed text-3xl font-black">{car.priceLabel}</p>
+                  <p className="text-gray-200 mt-1">{car.details}</p>
+                  <div className="mt-5 space-y-2 text-sm text-gray-100">
+                    <p><strong>Marca:</strong> {car.brand}</p><p><strong>Ano:</strong> {car.yearLabel}</p><p><strong>Quilometragem:</strong> {car.kmLabel}</p><p><strong>Câmbio:</strong> {car.transmission}</p><p><strong>Combustível:</strong> {car.fuel}</p><p><strong>Cor:</strong> {car.color}</p>
+                  </div>
+                  <a href="https://wa.me/5561999114003" target="_blank" className="mt-6 inline-block bg-brandRed hover:bg-red-600 px-4 py-2 rounded-lg font-semibold">Falar no WhatsApp</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      function AboutSection() {
+        return (
+          <section id="sobre" className="mt-14 bg-panelSoft border-y border-white/10 scroll-mt-28">
+            <div className="max-w-5xl mx-auto px-4 py-14 md:py-20">
+              <h2 className="text-3xl md:text-4xl font-bold text-center text-white">Sobre nós</h2>
+              <div className="mt-8 space-y-5 text-gray-100 leading-relaxed text-base md:text-lg">
+                <p>A LB multimarcas nasceu com o propósito de oferecer muito mais do que carros. Oferecemos experiências de compras seguras e transparentes.</p>
+                <p>Trabalhamos com veículos seminovos selecionados e com procedência garantida, porque acreditamos que confiança é o combustível de qualquer boa negociação.</p>
+                <p>Prezamos por qualidade, transparência e satisfação dos nossos clientes sempre.</p>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function InfoSections() {
+        return (
+          <section id="informacoes" className="mt-10 scroll-mt-28">
+            <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div id="venda-seu-carro" className="bg-panel border border-white/10 rounded-2xl p-5">
+                <h3 className="text-lg font-bold mb-2">Venda seu carro</h3>
+                <p className="text-gray-100 text-sm leading-relaxed">
+                  QUER VENDER SEU VEÍCULO? SOLICITE A AVALIAÇÃO AGORA! <span className="text-brandRed font-semibold">(61)9 99114003 LUCAS</span>
+                </p>
+              </div>
+              <div id="financie" className="bg-panel border border-white/10 rounded-2xl p-5">
+                <h3 className="text-lg font-bold mb-2">Financie</h3>
+                <p className="text-gray-100 text-sm leading-relaxed">
+                  FAÇA O FINANCIAMENTO DE VEÍCULO AQUI COM A GENTE. A LB MULTIMARCAS TEM PARCERIA COM AS PRINCIPAIS FINANCEIRAS DO MERCADO.
+                </p>
+              </div>
+              <div className="bg-panel border border-white/10 rounded-2xl p-5">
+                <h3 className="text-lg font-bold mb-2">Estoque</h3>
+                <p className="text-gray-100 text-sm leading-relaxed">CONFIRA OS MODELOS DISPONIVEIS.</p>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      function FooterSection() {
+        return (
+          <footer className="mt-14 border-t border-white/10 bg-slate-900/80">
+            <div className="max-w-7xl mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div><h4 className="font-bold text-lg text-white">LB VEICULOS</h4><p className="mt-3 text-sm text-gray-200 max-w-xs">Experiencia de compra segura e transparente em seminovos selecionados.</p></div>
+              <div><h4 className="font-bold text-lg text-white">Links uteis</h4><ul className="mt-3 space-y-2 text-sm text-gray-200"><li><a href="#sobre" className="hover:text-white">Sobre nos</a></li><li><a href="#estoque" className="hover:text-white">Planos de anuncio</a></li><li><a href="#financie" className="hover:text-white">Termos de uso</a></li><li><a href="#sobre" className="hover:text-white">Politica de privacidade</a></li></ul></div>
+              <div><h4 className="font-bold text-lg text-white">Contato</h4><ul className="mt-3 space-y-2 text-sm text-gray-200"><li>E-mail: atendimento@lbveiculos.com.br</li><li>Telefone: (61) 9 9911-4003</li><li>Segunda a sexta-feira - 08:00 as 17:00h</li><li>Sabado - 08:00 as 12:00h</li><li>Domingo - 08:00 as 12:00h</li></ul></div>
+            </div>
+            <div className="border-t border-white/10 py-4"><p className="text-center text-xs text-gray-300">© 2026 LB VEICULOS. Todos os direitos reservados.</p></div>
+          </footer>
+        );
+      }
+
+      function App() {
+        const [searchInput, setSearchInput] = useState("");
+        const [searchTerm, setSearchTerm] = useState("");
+        const [sortOrder, setSortOrder] = useState("recentes");
+        const [showFilters, setShowFilters] = useState(false);
+        const [selectedCar, setSelectedCar] = useState(null);
+
+        const [draftFilters, setDraftFilters] = useState({ brand: "", fuel: "", maxPrice: "", maxKm: "" });
+        const [appliedFilters, setAppliedFilters] = useState({ brand: "", fuel: "", maxPrice: "", maxKm: "" });
+
+        const brands = [...new Set(cars.map((c) => c.brand))];
+
+        const filteredCars = useMemo(() => {
+          let result = [...cars];
+          if (searchTerm.trim()) {
+            const q = searchTerm.toLowerCase();
+            result = result.filter((c) => c.title.toLowerCase().includes(q) || c.brand.toLowerCase().includes(q) || c.details.toLowerCase().includes(q));
+          }
+          if (appliedFilters.brand) result = result.filter((c) => c.brand === appliedFilters.brand);
+          if (appliedFilters.fuel) result = result.filter((c) => c.fuel === appliedFilters.fuel);
+          if (appliedFilters.maxPrice) result = result.filter((c) => c.price <= Number(appliedFilters.maxPrice));
+          if (appliedFilters.maxKm) result = result.filter((c) => c.km <= Number(appliedFilters.maxKm));
+
+          if (sortOrder === "precoAsc") result.sort((a, b) => a.price - b.price);
+          if (sortOrder === "precoDesc") result.sort((a, b) => b.price - a.price);
+          if (sortOrder === "kmAsc") result.sort((a, b) => a.km - b.km);
+          if (sortOrder === "recentes") result.sort((a, b) => b.year - a.year);
+
+          return result;
+        }, [searchTerm, sortOrder, appliedFilters]);
+
+        const handleSearch = () => setSearchTerm(searchInput);
+        const applyFilters = () => setAppliedFilters(draftFilters);
+        const clearFilters = () => {
+          const empty = { brand: "", fuel: "", maxPrice: "", maxKm: "" };
+          setDraftFilters(empty);
+          setAppliedFilters(empty);
+        };
+
+        return (
+          <div className="min-h-screen bg-darkBg">
+            <Header />
+            <main>
+              <section className="max-w-7xl mx-auto px-4 pt-8">
+                <div className="bg-gradient-to-r from-panel to-panelSoft border border-white/10 rounded-2xl p-6 md:p-10">
+                  <p className="text-sm uppercase tracking-wider text-brandRed font-bold">LB Multimarcas</p>
+                  <h1 className="mt-3 text-2xl md:text-4xl font-black leading-tight">Vendemos e compramos carros seminovos com transparência, segurança e o conforto que você merece.</h1>
+                  <div className="mt-5 inline-flex items-center gap-2 text-gray-100 text-sm"><icons.Phone className="w-4 h-4 text-brandRed" />Atendimento rápido via WhatsApp</div>
+                </div>
+              </section>
+
+              <SearchBar searchTerm={searchInput} setSearchTerm={setSearchInput} sortOrder={sortOrder} setSortOrder={setSortOrder} onSearch={handleSearch} onToggleFilter={() => setShowFilters((s) => !s)} />
+              <FilterPanel isOpen={showFilters} filters={draftFilters} setFilters={setDraftFilters} onApply={applyFilters} onClear={clearFilters} brands={brands} />
+
+              <section id="estoque" className="mt-8 scroll-mt-28">
+                <div className="max-w-7xl mx-auto px-4">
+                  {filteredCars.length === 0 ? (
+                    <div className="bg-panel border border-white/10 rounded-xl p-6 text-center text-gray-100">Nenhum veículo encontrado com os filtros/pesquisa atuais.</div>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">{filteredCars.map((car) => <CarCard key={car.id} car={car} onViewMore={setSelectedCar} />)}</div>
+                  )}
+                </div>
+              </section>
+
+              <InfoSections />
+              <AboutSection />
+            </main>
+
+            <CarModal car={selectedCar} onClose={() => setSelectedCar(null)} />
+            <FooterSection />
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
